@@ -1,1 +1,1 @@
-window.STREAM_URL = "https://api.trycloudflare.com/hls/index.m3u8";
+window.STREAM_URL = "/hls/index.m3u8";
