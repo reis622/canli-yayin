@@ -4,7 +4,7 @@
 <style>
 *{box-sizing:border-box;margin:0}
 :root{--bg:#07070a;--card:#101015;--line:#1d1d26;--txt:#ececf1;--mut:#8b8b99;--acc:#7c5cff}
-body{background:radial-gradient(1200px 600px at 50% -10%,#15122b 0%,var(--bg) 60%);color:var(--txt);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
+body{background:radial-gradient(1200px 600px at 50% -10%,#15122b 0%,var(--bg) 60%) fixed;color:var(--txt);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px}
 header{width:100%;max-width:1100px;display:flex;align-items:center;justify-content:flex-end;margin-bottom:18px}
 .badge{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.8px;padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--mut)}
 .dot{width:8px;height:8px;border-radius:50%;background:#555}
@@ -30,7 +30,7 @@ input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radi
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff}
 input[type=range]::-moz-range-thumb{width:13px;height:13px;border:0;border-radius:50%;background:#fff}
 .golive{font-size:13px;font-weight:800;letter-spacing:1px;color:#ff3b5c;background:none;padding:7px 8px;width:auto;height:auto}
-.golive:hover{background:rgba(255,255,255,.08)}.dots{display:flex;gap:5px;align-items:center;margin:0 10px 0 2px}.dots i{width:8px;height:8px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 8px #ff3b5c;transition:background .3s,box-shadow .3s}.dots.on i{background:#2ecc71;box-shadow:0 0 8px #2ecc71}
+.golive:hover{background:rgba(255,255,255,.08)}.dots{display:flex;gap:5px;align-items:center;margin:0 10px 0 2px}.dots i{width:8px;height:8px;border-radius:50%;background:#ff5d73;box-shadow:0 0 5px rgba(255,93,115,.4);transition:background .3s,box-shadow .3s}.dots.on i{background:#6fcf97;box-shadow:0 0 5px rgba(111,207,151,.45)}.golive{transition:color .3s}.golive.on{color:#6fcf97}
 </style></head><body>
 
 <div class="player" id="pl">
@@ -52,7 +52,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border:0;border-radiu
 const v=document.getElementById('v'),ov=document.getElementById('ov'),msg=document.getElementById('msg'),pl=document.getElementById('pl');
 const vol=document.getElementById('vol'),mui=document.getElementById('mui');
 const SRC=(window.STREAM_URL||'').trim()||'/hls/index.m3u8';let hls;
-function setLive(on){document.getElementById('dots').classList.toggle('on',on)}
+function setLive(on){document.getElementById('dots').classList.toggle('on',on);document.getElementById('gl').classList.toggle('on',on)}
 function wait(t){ov.classList.remove('hide');msg.textContent=t||'Yayın bekleniyor…';setLive(false)}
 /* ses: önce sesli dene; tarayıcı izin vermezse sessiz başlat, ilk dokunuşta otomatik aç */
 let ac,gn,wantSound=true;
