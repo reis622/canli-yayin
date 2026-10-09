@@ -1,1 +1,1 @@
-window.STREAM_URL = "/hls/index.m3u8";
+window.STREAM_URL = "https://yoga-hosted-feeding-removed.trycloudflare.com/hls/index.m3u8";
