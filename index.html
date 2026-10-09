@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="tr"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Yayın</title>
 <style>
 *{box-sizing:border-box;margin:0}
@@ -51,7 +51,7 @@ input[type=range]::-moz-range-thumb{width:13px;height:13px;border:0;border-radiu
 <script>
 const v=document.getElementById('v'),ov=document.getElementById('ov'),msg=document.getElementById('msg'),pl=document.getElementById('pl');
 const vol=document.getElementById('vol'),mui=document.getElementById('mui');
-const SRC=(window.STREAM_URL||'').trim()||'/hls/index.m3u8';let hls;
+let SRC='';let hls;
 function setLive(on){document.getElementById('dots').classList.toggle('on',on);document.getElementById('gl').classList.toggle('on',on)}
 function wait(t){ov.classList.remove('hide');msg.textContent=t||'Yayın bekleniyor…';setLive(false)}
 /* ses: önce sesli dene; tarayıcı izin vermezse sessiz başlat, ilk dokunuşta otomatik aç */
@@ -86,5 +86,18 @@ vol.oninput=e=>{boost();if(ac)ac.resume().catch(()=>{});v.volume=+e.target.value
 document.getElementById('gl').onclick=()=>{if(hls&&hls.liveSyncPosition)v.currentTime=hls.liveSyncPosition;v.play()};
 document.getElementById('fs').onclick=()=>document.fullscreenElement?document.exitFullscreen():pl.requestFullscreen();
 v.addEventListener('dblclick',()=>document.getElementById('fs').click());
-window.addEventListener('load',start);
+async function init(){
+  let k=(location.hash||'').slice(1);
+  try{ if(k){localStorage.setItem('k',k);history.replaceState(null,'',location.pathname)} else k=localStorage.getItem('k')||''; }catch(e){}
+  if(!k||!window.STREAM_ENC){return deny()}
+  try{
+    const [iv,ct]=window.STREAM_ENC.split('.').map(s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0)));
+    const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(k));
+    const key=await crypto.subtle.importKey('raw',hash,'AES-GCM',false,['decrypt']);
+    SRC=new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ct));
+  }catch(e){try{localStorage.removeItem('k')}catch(_){};return deny()}
+  start();
+}
+function deny(){document.querySelector('.spin').style.display='none';msg.textContent='Bu yayını izlemek için sana gönderilen özel bağlantıyı kullanman gerekiyor.';ov.classList.remove('hide')}
+window.addEventListener('load',init);
 </script></body></html>

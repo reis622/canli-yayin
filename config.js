@@ -1,1 +1,1 @@
-window.STREAM_URL = "https://shame-pavilion-drinking-exterior.trycloudflare.com/hls/index.m3u8";
+window.STREAM_ENC = "n19NwXpBAk1YdNDv.P1kFeDRRxrvkbmlfzd2dBjTlD2GWQG4segvdG959OoGj1ASLXP0KjWPjy7hzJN2QWi85Y6fuKnhs1P4gsDvTkQmoRFyUU1IIuHBlq6gd1y9jsrj0wVeas0Y=";
