@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yayın</title>
+<style>
+*{box-sizing:border-box;margin:0}
+:root{--bg:#07070a;--card:#101015;--line:#1d1d26;--txt:#ececf1;--mut:#8b8b99;--acc:#7c5cff}
+body{background:radial-gradient(1200px 600px at 50% -10%,#15122b 0%,var(--bg) 60%);color:var(--txt);font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
+header{width:100%;max-width:1100px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+h1{font-size:18px;font-weight:600;letter-spacing:.2px}
+.badge{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.8px;padding:6px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--mut)}
+.dot{width:8px;height:8px;border-radius:50%;background:#555}
+.badge.live{color:#fff;border-color:#4a1b25;background:#2a0f16}.badge.live .dot{background:#ff3b5c;box-shadow:0 0 10px #ff3b5c;animation:p 1.4s infinite}
+@keyframes p{50%{opacity:.35}}
+.player{position:relative;width:100%;max-width:1100px;aspect-ratio:16/9;background:#000;border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(124,92,255,.08)}
+video{width:100%;height:100%;display:block;background:#000}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);transition:opacity .3s;text-align:center;padding:20px}
+.overlay.hide{opacity:0;pointer-events:none}
+.spin{width:34px;height:34px;border:3px solid #2a2a38;border-top-color:var(--acc);border-radius:50%;animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.overlay p{color:var(--mut);font-size:14px}
+.bar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:34px 16px 14px;background:linear-gradient(transparent,rgba(0,0,0,.85));opacity:0;transition:opacity .25s}
+.player:hover .bar,.player.show .bar{opacity:1}
+button{background:none;border:0;color:#fff;cursor:pointer;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;transition:background .15s}
+button:hover{background:rgba(255,255,255,.12)}
+svg{width:22px;height:22px;fill:#fff}
+.sp{flex:1}
+input[type=range]{-webkit-appearance:none;appearance:none;width:90px;height:4px;border-radius:4px;background:#3a3a48;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff}
+.golive{font-size:12px;font-weight:700;letter-spacing:.6px;color:#fff;background:var(--acc);padding:7px 12px;border-radius:999px;width:auto;height:auto}
+.golive:hover{background:#9279ff}
+footer{margin-top:18px;color:var(--mut);font-size:12px}
+</style></head><body>
+<header><h1></h1><div class="badge" id="badge"><span class="dot"></span><span id="btxt">ÇEVRİMDIŞI</span></div></header>
+<div class="player" id="pl">
+<video id="v" playsinline autoplay></video>
+<div class="overlay" id="ov"><div class="spin"></div><p id="msg">Yayın bekleniyor…</p></div>
+<div class="bar">
+<button id="pp" title="Oynat/Duraklat"><svg viewBox="0 0 24 24" id="ppi"><path d="M8 5v14l11-7z"/></svg></button>
+<button id="mu" title="Ses"><svg viewBox="0 0 24 24" id="mui"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4z"/></svg></button>
+<input type="range" id="vol" min="0" max="1" step="0.05" value="1">
+<span class="sp"></span>
+<button class="golive" id="gl">CANLIYA GEÇ</button>
+<button id="fs" title="Tam ekran"><svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button>
+</div></div>
+<button id="snd" style="display:none;position:absolute;top:16px;right:16px;width:auto;height:auto;padding:10px 16px;background:#7c5cff;font-weight:600;font-size:14px;z-index:5;border-radius:999px">🔊 Sesi aç</button>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<script>
+const v=document.getElementById('v'),ov=document.getElementById('ov'),msg=document.getElementById('msg'),badge=document.getElementById('badge'),btxt=document.getElementById('btxt'),pl=document.getElementById('pl');
+const SRC=(window.STREAM_URL||'').trim()||'/hls/index.m3u8';let hls;
+function setLive(on){badge.classList.toggle('live',on);btxt.textContent=on?'CANLI':'ÇEVRİMDIŞI'}
+function wait(t){ov.classList.remove('hide');msg.textContent=t||'Yayın bekleniyor…';setLive(false)}
+function start(){
+  if(hls){hls.destroy();hls=null}
+  if(Hls.isSupported()){
+    hls=new Hls({lowLatencyMode:true,liveSyncDurationCount:2,maxLiveSyncPlaybackRate:1.1});
+    hls.loadSource(SRC);hls.attachMedia(v);
+    hls.on(Hls.Events.MANIFEST_PARSED,()=>{tryPlay();ov.classList.add('hide');setLive(true)});
+    hls.on(Hls.Events.ERROR,(e,d)=>{if(d.fatal){wait('Yayın bekleniyor…');hls.destroy();hls=null;setTimeout(start,3000)}});
+  }else{v.src=SRC;v.addEventListener('loadedmetadata',()=>{v.play();ov.classList.add('hide');setLive(true)},{once:true});v.onerror=()=>{wait();setTimeout(start,3000)}}
+}
+const ppi=document.getElementById('ppi');
+const PLAY='M8 5v14l11-7z',PAUSE='M6 5h4v14H6zm8 0h4v14h-4z';
+v.addEventListener('play',()=>ppi.innerHTML='<path d="'+PAUSE+'"/>');
+v.addEventListener('pause',()=>ppi.innerHTML='<path d="'+PLAY+'"/>');
+document.getElementById('pp').onclick=()=>v.paused?v.play():v.pause();
+v.onclick=()=>v.paused?v.play():v.pause();
+document.getElementById('mu').onclick=()=>{v.muted=!v.muted;if(ac)ac.resume()};
+document.getElementById('vol').oninput=e=>{v.volume=e.target.value;v.muted=false};
+document.getElementById('gl').onclick=()=>{if(hls&&hls.liveSyncPosition)v.currentTime=hls.liveSyncPosition;v.play()};
+document.getElementById('fs').onclick=()=>document.fullscreenElement?document.exitFullscreen():pl.requestFullscreen();
+v.addEventListener('dblclick',()=>document.getElementById('fs').click());
+let ac,gn;function boost(){if(ac)return;ac=new (window.AudioContext||window.webkitAudioContext)();gn=ac.createGain();gn.gain.value=2.2;const c=ac.createDynamicsCompressor();ac.createMediaElementSource(v).connect(gn);gn.connect(c);c.connect(ac.destination)}
+function tryPlay(){boost();if(ac.state==='suspended')ac.resume();v.muted=false;v.play().then(()=>{snd.style.display='none'}).catch(()=>{v.muted=true;v.play().catch(()=>{});snd.style.display='block'})}
+const snd=document.getElementById('snd');snd.onclick=()=>{boost();ac.resume();v.muted=false;v.volume=document.getElementById('vol').value;v.play();snd.style.display='none'};
+v.addEventListener('volumechange',()=>{if(!v.muted)snd.style.display='none'});
+start();
+</script></body></html>
